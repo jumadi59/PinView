@@ -1,6 +1,5 @@
 package com.jumadi.pinview
 
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.TypedArray
@@ -15,14 +14,12 @@ import android.os.Handler
 import android.text.*
 import android.util.AttributeSet
 import android.util.Log
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
-import java.text.NumberFormat
 
 
 /**
@@ -38,8 +35,11 @@ class PinView : View {
     var isKeyboardDefault = true
     var isShowNumberAnimate = false
 
-    val text = SpannableStringBuilder()
+    private var mText = SpannableStringBuilder()
     private var chars = ArrayList<ItemText>()
+
+    val text: Spannable
+    get() = mText
 
     private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -202,9 +202,9 @@ class PinView : View {
             //canvas.drawRect(rect, paintDebug)
             ix += itemSize + itemMargin
 
-            if (i < text.length) {
+            if (i < mText.length) {
                 val textBounds = Rect()
-                val t = text[i].toString()
+                val t = mText[i].toString()
                 if (chars[i].isShow) {
                     textPaint.getTextBounds(t, 0, t.length, textBounds)
                     canvas.drawText(t, rect.exactCenterX() - ( textBounds.width() / 2), rect.exactCenterY() + ( textBounds.height() / 2), textPaint)
@@ -220,19 +220,26 @@ class PinView : View {
     }
 
     fun addPinChar(char: Char) {
-        if (text.length >= maxPIN) return
-        text.append(char)
+        if (mText.length >= maxPIN) return
+        mText.append(char)
         chars.add(ItemText(char))
         invalidate()
     }
 
     fun removeChar() {
-        if (text.isNotEmpty()) {
-            val item = chars[text.length - 1].also { it.delete() }
+        if (mText.isNotEmpty()) {
+            val item = chars[mText.length - 1].also { it.delete() }
             chars.remove(item)
-            text.delete(text.length - 1, text.length)
+            mText.delete(mText.length - 1, mText.length)
             invalidate()
         }
+    }
+
+    fun clear() {
+        chars.forEach { it.delete() }
+        chars.clear()
+        mText.clear()
+        invalidate()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -257,7 +264,7 @@ class PinView : View {
 
     inner class PinInputConnection(view: PinView, fullEditor: Boolean) : BaseInputConnection(view, fullEditor) {
 
-        private var mEditable = view.text
+        private var mEditable = view.mText
 
         init {
             Selection.setSelection(mEditable, 0)
@@ -269,8 +276,8 @@ class PinView : View {
 
         override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
             Log.e("MyInputConnection", "deleteSurroundingText()")
-            if (text.isNotEmpty()) {
-                val item = chars[text.length - 1].also { it.delete() }
+            if (mText.isNotEmpty()) {
+                val item = chars[mText.length - 1].also { it.delete() }
                 chars.remove(item)
                 invalidate()
             }
