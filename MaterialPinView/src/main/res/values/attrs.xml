@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PinView">
+        <attr name="pinDrawable" format="reference" />
+        <attr name="pinDrawableFocus" format="reference" />
+        <attr name="pinDrawableTint" format="reference" />
+        <attr name="pinDrawableFocusTint" format="reference" />
+        <attr name="pinShowPreview" format="boolean" />
+        <attr name="pinLength" format="integer" />
+        <attr name="pinTextColor" format="color" />
+        <attr name="pinTextSize" format="dimension" />
+        <attr name="pinItemSize" format="dimension" />
+        <attr name="pinItemMargin" format="dimension" />
+        <attr name="keyboardDefault" format="boolean" />
+    </declare-styleable>
+</resources>
