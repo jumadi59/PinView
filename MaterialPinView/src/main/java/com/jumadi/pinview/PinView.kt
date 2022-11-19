@@ -33,8 +33,9 @@ class PinView : View {
     var itemSize = 25
     var itemMargin = 5
     var isKeyboardDefault = true
-    var isShowNumberAnimate = false
+    var isPinVisible = false
 
+    var pinVisibleDuration = -1
     private var mText = SpannableStringBuilder()
     private var chars = ArrayList<ItemText>()
 
@@ -85,7 +86,8 @@ class PinView : View {
                 itemSize =  it.getDimensionPixelSize(R.styleable.PinView_pinItemSize, 12)
                 itemMargin =  it.getDimensionPixelSize(R.styleable.PinView_pinItemMargin, 4)
                 isKeyboardDefault =  it.getBoolean(R.styleable.PinView_keyboardDefault, true)
-                isShowNumberAnimate =  it.getBoolean(R.styleable.PinView_pinShowPreview, false)
+                isPinVisible =  it.getBoolean(R.styleable.PinView_pinVisible, false)
+                pinVisibleDuration = it.getInt(R.styleable.PinView_pinVisibleDuration, -1)
 
                 textPaint.textSize = it.getDimension(R.styleable.PinView_pinTextSize, (itemSize * 2).toFloat())
                 textPaint.density = resources.displayMetrics.density
@@ -205,12 +207,22 @@ class PinView : View {
             if (i < mText.length) {
                 val textBounds = Rect()
                 val t = mText[i].toString()
-                if (chars[i].isShow) {
-                    textPaint.getTextBounds(t, 0, t.length, textBounds)
-                    canvas.drawText(t, rect.exactCenterX() - ( textBounds.width() / 2), rect.exactCenterY() + ( textBounds.height() / 2), textPaint)
+
+                if (pinVisibleDuration > 0) {
+                    if (chars[i].isShow) {
+                        textPaint.getTextBounds(t, 0, t.length, textBounds)
+                        canvas.drawText(t, rect.exactCenterX() - ( textBounds.width() / 2), rect.exactCenterY() + ( textBounds.height() / 2), textPaint)
+                    } else {
+                        itemFocusDrawable?.bounds = rect
+                        itemFocusDrawable?.draw(canvas)
+                    }
                 } else {
-                    itemFocusDrawable?.bounds = rect
-                    itemFocusDrawable?.draw(canvas)
+                    if (chars[i].isShow) {
+                        itemFocusDrawable?.bounds = rect
+                        itemFocusDrawable?.draw(canvas)
+                        textPaint.getTextBounds(t, 0, t.length, textBounds)
+                        canvas.drawText(t, rect.exactCenterX() - ( textBounds.width() / 2), rect.exactCenterY() + ( textBounds.height() / 2), textPaint)
+                    }
                 }
             } else {
                 itemDrawable?.bounds = rect
@@ -267,7 +279,7 @@ class PinView : View {
         private var mEditable = view.mText
 
         init {
-            Selection.setSelection(mEditable, 0)
+            Selection.setSelection(mEditable, mEditable.length)
         }
 
         override fun getEditable(): Editable {
@@ -301,9 +313,9 @@ class PinView : View {
         }
 
         init {
-            if (isShowNumberAnimate) {
-                isShow = true
-                mHandler.postDelayed(mRunnable, 300)
+            isShow = isPinVisible
+            if (pinVisibleDuration > 0) {
+                mHandler.postDelayed(mRunnable, pinVisibleDuration.toLong())
             }
         }
 

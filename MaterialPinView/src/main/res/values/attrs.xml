@@ -5,7 +5,8 @@
         <attr name="pinDrawableFocus" format="reference" />
         <attr name="pinDrawableTint" format="reference" />
         <attr name="pinDrawableFocusTint" format="reference" />
-        <attr name="pinShowPreview" format="boolean" />
+        <attr name="pinVisible" format="boolean" />
+        <attr name="pinVisibleDuration" format="integer" />
         <attr name="pinLength" format="integer" />
         <attr name="pinTextColor" format="color" />
         <attr name="pinTextSize" format="dimension" />
