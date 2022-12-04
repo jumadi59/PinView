@@ -14,8 +14,10 @@ import android.os.Handler
 import android.text.*
 import android.util.AttributeSet
 import android.util.Log
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnKeyListener
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -123,6 +125,24 @@ class PinView : View {
         if (isKeyboardDefault) {
             requestFocus()
             isFocusableInTouchMode = true
+            setOnKeyListener(OnKeyListener { v, keyCode, event ->
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    if (event.unicodeChar == 0) { // control character
+                        if (keyCode == KeyEvent.KEYCODE_DEL) {
+                            removeChar()
+                            Log.i("TAG", "text: $mText (keycode)")
+                            invalidate()
+                            return@OnKeyListener true
+                        }
+                    } else { // text character
+                        addPinChar(event.unicodeChar.toChar())
+                        Log.i("TAG", "text: $mText (keycode)")
+                        invalidate()
+                        return@OnKeyListener true
+                    }
+                }
+                false
+            })
         }
     }
 
@@ -262,6 +282,11 @@ class PinView : View {
             requestFocus()
         }
         return true
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        Log.e("MyInputConnection", "onKeyUp() $keyCode")
+        return super.onKeyUp(keyCode, event)
     }
 
     override fun onCreateInputConnection(outAttrs: EditorInfo?): InputConnection {
