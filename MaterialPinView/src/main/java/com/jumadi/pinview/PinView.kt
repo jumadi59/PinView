@@ -242,6 +242,9 @@ class PinView : View {
                         itemFocusDrawable?.draw(canvas)
                         textPaint.getTextBounds(t, 0, t.length, textBounds)
                         canvas.drawText(t, rect.exactCenterX() - ( textBounds.width() / 2), rect.exactCenterY() + ( textBounds.height() / 2), textPaint)
+                    } else {
+                        itemFocusDrawable?.bounds = rect
+                        itemFocusDrawable?.draw(canvas)
                     }
                 }
             } else {
