@@ -22,6 +22,7 @@ import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
 
 
 /**
@@ -125,25 +126,39 @@ class PinView : View {
         if (isKeyboardDefault) {
             requestFocus()
             isFocusableInTouchMode = true
-            setOnKeyListener(OnKeyListener { v, keyCode, event ->
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    if (event.unicodeChar == 0) { // control character
-                        if (keyCode == KeyEvent.KEYCODE_DEL) {
-                            removeChar()
-                            Log.i("TAG", "text: $mText (keycode)")
-                            invalidate()
-                            return@OnKeyListener true
-                        }
-                    } else { // text character
-                        addPinChar(event.unicodeChar.toChar())
-                        Log.i("TAG", "text: $mText (keycode)")
-                        invalidate()
-                        return@OnKeyListener true
-                    }
-                }
-                false
-            })
+            setOnKeyListener(onKeyListener)
         }
+    }
+
+    private var _onKeyListener: OnKeyListener? = null
+
+    private val onKeyListener = OnKeyListener { v, keyCode, event ->
+        _onKeyListener?.onKey(v, keyCode, event)
+        if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+            val inputMethodManager = ContextCompat.getSystemService(context, InputMethodManager::class.java)
+            inputMethodManager?.hideSoftInputFromWindow(windowToken, 0)
+            if (hasFocus()) clearFocus()
+        } else if (event.action == KeyEvent.ACTION_DOWN) {
+            if (event.unicodeChar == 0) { // control character
+                if (keyCode == KeyEvent.KEYCODE_DEL) {
+                    removeChar()
+                    Log.i("TAG", "text: $mText (keycode)")
+                    invalidate()
+                    return@OnKeyListener true
+                }
+            } else { // text character
+                addPinChar(event.unicodeChar.toChar())
+                Log.i("TAG", "text: $mText (keycode)")
+                invalidate()
+                return@OnKeyListener true
+            }
+        }
+        false
+    }
+    override fun setOnKeyListener(l: OnKeyListener?) {
+        if (onKeyListener != l) {
+            _onKeyListener = l
+        } else super.setOnKeyListener(onKeyListener)
     }
 
     @SuppressLint("DrawAllocation")
